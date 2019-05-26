@@ -3,9 +3,13 @@
 
 #include <iostream>
 #include <string>
-#include "Stream.h"
+#include <functional>
+#include <algorithm>
+#include "range/v3/all.hpp"
+//#include "range/v3/view/all.hpp"
 
 using namespace std;
+using namespace ranges;
 
 class FBPair
 {
@@ -34,16 +38,18 @@ auto do5 = genFB(5, "buzz");
 auto do7 = genFB(7, "bang");
 auto do11 = genFB(11, "boom");
 
-Stream<int> intsFrom(int n)
-{
-	return Stream<int>([n]() {
-			return Cell<int>(n, intsFrom(n + 1));
-	});
-}
-
 int main()
 {
-	auto r = intsFrom(1);
+  auto s = view::ints(1, unreachable)
+    | view::transform([] (int i) { return FBPair(i, ""); })
+    | view::transform([] (FBPair p) { return do3(p); })
+    | view::transform([] (FBPair p) { return do5(p); })
+    | view::transform([] (FBPair p) { return do7(p); })
+    | view::transform([] (FBPair p) { return do11(p); })
+    | view::transform([] (FBPair p) { return p.toString(); })
+    | view::take(100);
+  ranges::for_each(s, [](const string& s) { cout << s << endl; });
 
-	auto p1 = fmap(r, [](int i) { return FBPair(i, ""); });
+  return 0;
 }
+
