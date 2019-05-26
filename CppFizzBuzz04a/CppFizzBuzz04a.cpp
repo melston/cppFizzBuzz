@@ -5,8 +5,12 @@
 #include <string>
 #include <functional>
 #include <algorithm>
+
+#ifdef WIN32
+# include <range/v3/all.hpp>
+#else
 #include "range/v3/all.hpp"
-//#include "range/v3/view/all.hpp"
+#endif
 
 using namespace std;
 using namespace ranges;
@@ -40,16 +44,20 @@ auto do11 = genFB(11, "boom");
 
 int main()
 {
-  auto s = view::ints(1, unreachable)
-    | view::transform([] (int i) { return FBPair(i, ""); })
-    | view::transform([] (FBPair p) { return do3(p); })
-    | view::transform([] (FBPair p) { return do5(p); })
-    | view::transform([] (FBPair p) { return do7(p); })
-    | view::transform([] (FBPair p) { return do11(p); })
-    | view::transform([] (FBPair p) { return p.toString(); })
-    | view::take(100);
-  ranges::for_each(s, [](const string& s) { cout << s << endl; });
+#ifdef WIN32
+	auto s = view::ints(1)
+#else
+	auto s = view::ints(1, unreachable)
+#endif
+		| view::transform([](int i) { return FBPair(i, ""); })
+		| view::transform(do3)
+		| view::transform(do5)
+		| view::transform(do7)
+		| view::transform(do11)
+		| view::transform([](FBPair p) { return p.toString(); })
+		| view::take(100);
+	ranges::for_each(s, [](const string & s) { cout << s << endl; });
 
-  return 0;
+	return 0;
 }
 

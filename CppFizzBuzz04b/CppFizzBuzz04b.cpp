@@ -5,8 +5,12 @@
 #include <string>
 #include <functional>
 #include <algorithm>
+
+#ifdef WIN32
+# include <range/v3/all.hpp>
+#else
 #include "range/v3/all.hpp"
-//#include "range/v3/view/all.hpp"
+#endif
 
 using namespace std;
 using namespace ranges;
@@ -38,26 +42,26 @@ auto do5 = genFB(5, "buzz");
 auto do7 = genFB(7, "bang");
 auto do11 = genFB(11, "boom");
 
-auto print  = [](const string& s) { cout << s << endl; };
-auto toPair = [] (int i) { return FBPair(i, ""); };
-auto x3  = [] (FBPair p) { return do3(p); };
-auto x5  = [] (FBPair p) { return do5(p); };
-auto x7  = [] (FBPair p) { return do7(p); };
-auto x11 = [] (FBPair p) { return do11(p); };
-auto toStr = [] (FBPair p) { return p.toString(); };
+auto print = [](const string & s) { cout << s << endl; };
+auto toPair = [](int i) { return FBPair(i, ""); };
+auto toStr = [](FBPair p) { return p.toString(); };
 
 int main()
 {
-  auto s = view::ints(1, unreachable)
-    | view::transform(toPair)
-    | view::transform(x3)
-    | view::transform(x5)
-    | view::transform(x7)
-    | view::transform(x11)
-    | view::transform(toStr)
-    | view::take(100);
-  ranges::for_each(s, print);
+#ifdef WIN32
+	auto s = view::ints(1)
+#else
+	auto s = view::ints(1, unreachable)
+#endif
+		| view::transform(toPair)
+		| view::transform(do3)
+		| view::transform(do5)
+		| view::transform(do7)
+		| view::transform(do11)
+		| view::transform(toStr)
+		| view::take(100);
+	ranges::for_each(s, print);
 
-  return 0;
+	return 0;
 }
 
